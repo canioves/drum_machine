@@ -45,4 +45,5 @@
 
 .drum-pad p {
   margin: 10px;
+  pointer-events: none;
 }

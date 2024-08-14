@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
 
 const drumpadButtonsArray = [
@@ -58,11 +58,11 @@ const drumpadButtonsArray = [
   },
 ];
 
-function SampleScreen() {
+function SampleScreen({ sampleName }) {
   return (
     <div id="sample-screen" className="display-item">
       <span>Current sample:</span>
-      <div id="screen"></div>
+      <div id="screen">{sampleName}</div>
     </div>
   );
 }
@@ -86,9 +86,9 @@ function Display({ children }) {
   return <div id="display">{children}</div>;
 }
 
-function DrumpadButton({ keyName, sampleID, sampleSource }) {
+function DrumpadButton({ keyName, sampleSource, onDrumpadButtonClick }) {
   return (
-    <div className="drum-pad" id={sampleID}>
+    <div className="drum-pad" id={keyName} onClick={onDrumpadButtonClick}>
       <audio className="clip" id={keyName} src={sampleSource}></audio>
       <p>{keyName}</p>
     </div>
@@ -100,14 +100,52 @@ function Drumpad({ children }) {
 }
 
 function DrumMachine() {
-  function handleDrumpadButton(audioURL) {
-    const audio = new Audio(audioURL);
+  const [currentSample, setCurrentSample] = useState("");
+
+  const getDrumpadButton = (key) =>
+    drumpadButtonsArray.find((x) => x.keyName === key);
+
+  function playSample(sample) {
+    const audio = new Audio(sample);
     audio.play();
   }
+
+  useEffect(() => {
+    function handleDrumpadButtonKeyPress(event) {
+      console.log(event);
+      const keyName = event.key.toUpperCase();
+      const drumpadButtonObj = getDrumpadButton(keyName);
+      if (drumpadButtonObj) {
+        const newSample = drumpadButtonObj.sampleID;
+        const sampleSource = drumpadButtonObj.sampleSource;
+
+        playSample(sampleSource);
+        setCurrentSample(newSample);
+      }
+    }
+
+    document.addEventListener("keypress", handleDrumpadButtonKeyPress);
+
+    return () => {
+      document.removeEventListener("keypress", handleDrumpadButtonKeyPress);
+    };
+  }, []);
+
+  function handleDrumpadButtonClick(event) {
+    console.log(event);
+    const keyName = event.target.attributes.id.value;
+    const drumpadButtonObj = getDrumpadButton(keyName);
+    const newSample = drumpadButtonObj.sampleID;
+    const sampleSource = drumpadButtonObj.sampleSource;
+
+    playSample(sampleSource);
+    setCurrentSample(newSample);
+  }
+
   return (
     <div id="drum-machine">
       <Display>
-        <SampleScreen />
+        <SampleScreen sampleName={currentSample} />
         <VolumeSlider />
       </Display>
       <Drumpad>
@@ -115,8 +153,8 @@ function DrumMachine() {
           <DrumpadButton
             key={button.keyName}
             keyName={button.keyName}
-            sampleID={button.sampleID}
             sampleSource={button.sampleSource}
+            onDrumpadButtonClick={handleDrumpadButtonClick}
           />
         ))}
       </Drumpad>
