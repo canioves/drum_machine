@@ -1,163 +1,108 @@
 import { useEffect, useState } from "react";
 import "./App.css";
 
-const drumpadButtonsArray = [
+const drumpadArray = [
   {
     keyName: "Q",
-    sampleID: "Sample-1",
+    clipName: "Sample-1",
     sampleSource:
       "https://cdn.freecodecamp.org/testable-projects-fcc/audio/Heater-1.mp3",
   },
   {
     keyName: "W",
-    sampleID: "Sample-2",
+    clipName: "Sample-2",
     sampleSource:
       "https://cdn.freecodecamp.org/testable-projects-fcc/audio/Heater-2.mp3",
   },
   {
     keyName: "E",
-    sampleID: "Sample-3",
+    clipName: "Sample-3",
     sampleSource:
       "https://cdn.freecodecamp.org/testable-projects-fcc/audio/Heater-3.mp3",
   },
   {
     keyName: "A",
-    sampleID: "Sample-4",
+    clipName: "Sample-4",
     sampleSource:
       "https://cdn.freecodecamp.org/testable-projects-fcc/audio/Heater-4_1.mp3",
   },
   {
     keyName: "S",
-    sampleID: "Clap",
+    clipName: "Clap",
     sampleSource:
       "https://cdn.freecodecamp.org/testable-projects-fcc/audio/Heater-6.mp3",
   },
   {
     keyName: "D",
-    sampleID: "Open-HH",
+    clipName: "Open-HH",
     sampleSource:
       "https://cdn.freecodecamp.org/testable-projects-fcc/audio/Dsc_Oh.mp3",
   },
   {
     keyName: "Z",
-    sampleID: "Kick-n-Hat",
+    clipName: "Kick-n-Hat",
     sampleSource:
       "https://cdn.freecodecamp.org/testable-projects-fcc/audio/Kick_n_Hat.mp3",
   },
   {
     keyName: "X",
-    sampleID: "Kick",
+    clipName: "Kick",
     sampleSource:
       "https://cdn.freecodecamp.org/testable-projects-fcc/audio/RP4_KICK_1.mp3",
   },
   {
     keyName: "C",
-    sampleID: "Closed-HH",
+    clipName: "Closed-HH",
     sampleSource:
       "https://cdn.freecodecamp.org/testable-projects-fcc/audio/Cev_H2.mp3",
   },
 ];
 
-function SampleScreen({ sampleName }) {
-  return (
-    <div id="sample-screen" className="display-item">
-      <span>Current sample:</span>
-      <div id="screen">{sampleName}</div>
-    </div>
-  );
-}
-
-function VolumeSlider() {
-  return (
-    <div id="volume-slider" className="display-item">
-      <label htmlFor="volume-slider">Volume: </label>
-      <input
-        id="volume-slider"
-        type="range"
-        min="1"
-        max="100"
-        defaultValue="50"
-      ></input>
-    </div>
-  );
-}
-
-function Display({ children }) {
-  return <div id="display">{children}</div>;
-}
-
-function DrumpadButton({ keyName, sampleSource, onDrumpadButtonClick }) {
-  return (
-    <div className="drum-pad" id={keyName} onClick={onDrumpadButtonClick}>
-      <audio className="clip" id={keyName} src={sampleSource}></audio>
-      <p>{keyName}</p>
-    </div>
-  );
-}
-
-function Drumpad({ children }) {
+function DrumPadSection({ children }) {
   return <div id="drum-pad-container">{children}</div>;
 }
 
+function DrumPad({ clipName, keyName, sampleSource, onDrumpadClick }) {
+  return (
+    <div className="drum-pad" id={clipName} onClick={onDrumpadClick}>
+      <p>{keyName}</p>
+      <audio id={keyName} className="clip" src={sampleSource}></audio>
+    </div>
+  );
+}
+
+function Display({ clipName }) {
+  return (
+    <div id="display">
+      <span id="clip-name">{clipName}</span>
+    </div>
+  );
+}
+
 function DrumMachine() {
-  const [currentSample, setCurrentSample] = useState("");
-
-  const getDrumpadButton = (key) =>
-    drumpadButtonsArray.find((x) => x.keyName === key);
-
-  function playSample(sample) {
-    const audio = new Audio(sample);
-    audio.play();
-  }
-
-  useEffect(() => {
-    function handleDrumpadButtonKeyPress(event) {
-      console.log(event);
-      const keyName = event.key.toUpperCase();
-      const drumpadButtonObj = getDrumpadButton(keyName);
-      if (drumpadButtonObj) {
-        const newSample = drumpadButtonObj.sampleID;
-        const sampleSource = drumpadButtonObj.sampleSource;
-
-        playSample(sampleSource);
-        setCurrentSample(newSample);
-      }
-    }
-
-    document.addEventListener("keypress", handleDrumpadButtonKeyPress);
-
-    return () => {
-      document.removeEventListener("keypress", handleDrumpadButtonKeyPress);
-    };
-  }, []);
-
-  function handleDrumpadButtonClick(event) {
-    console.log(event);
-    const keyName = event.target.attributes.id.value;
-    const drumpadButtonObj = getDrumpadButton(keyName);
-    const newSample = drumpadButtonObj.sampleID;
-    const sampleSource = drumpadButtonObj.sampleSource;
-
-    playSample(sampleSource);
-    setCurrentSample(newSample);
+  async function handleDrumpadClick(event) {
+    const audioElement = event.target.childNodes[1];
+    audioElement.load();
+    audioElement
+      .play()
+      .then()
+      .catch((error) => console.log(error));
   }
 
   return (
     <div id="drum-machine">
-      <Display>
-        <SampleScreen sampleName={currentSample} />
-        <VolumeSlider />
-      </Display>
-      <Drumpad>
-        {drumpadButtonsArray.map((button) => (
-          <DrumpadButton
-            key={button.keyName}
-            keyName={button.keyName}
-            sampleSource={button.sampleSource}
-            onDrumpadButtonClick={handleDrumpadButtonClick}
+      <Display clipName={"test"}></Display>
+      <DrumPadSection>
+        {drumpadArray.map((item, index) => (
+          <DrumPad
+            key={index}
+            clipName={item.clipName}
+            keyName={item.keyName}
+            sampleSource={item.sampleSource}
+            onDrumpadClick={handleDrumpadClick}
           />
         ))}
-      </Drumpad>
+      </DrumPadSection>
     </div>
   );
 }
