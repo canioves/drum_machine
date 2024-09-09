@@ -6,7 +6,9 @@
 
 #display {
   border: 1px solid blue;
+  text-align: center;
 }
+
 
 #drum-machine {
   width: 500px;

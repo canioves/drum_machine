@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import "./App.css";
 
 const drumpadArray = [
@@ -80,10 +80,36 @@ function Display({ clipName }) {
 }
 
 function DrumMachine() {
-  async function handleDrumpadClick(event) {
+  const [clipName, setClipName] = useState("");
+  useEffect(() => {
+    document.addEventListener("keypress", (event) => {
+      handleKeypress(event);
+    });
+    return document.removeEventListener("keypress", (event) =>
+      handleKeypress(event)
+    );
+  }, []);
+
+  function handleKeypress(event) {
+    const key = event.key.toUpperCase();
+    const audioElement = document.getElementById(key);
+    if (audioElement) {
+      const clipName = audioElement.parentElement.id;
+      playAudio(audioElement);
+      setClipName(clipName);
+    }
+  }
+
+  function handleDrumpadClick(event) {
     const audioElement = event.target.childNodes[1];
-    audioElement.load();
-    audioElement
+    const clipName = event.target.id;
+    setClipName(clipName);
+    playAudio(audioElement);
+  }
+
+  function playAudio(elem) {
+    elem.load();
+    elem
       .play()
       .then()
       .catch((error) => console.log(error));
@@ -91,7 +117,7 @@ function DrumMachine() {
 
   return (
     <div id="drum-machine">
-      <Display clipName={"test"}></Display>
+      <Display clipName={clipName}></Display>
       <DrumPadSection>
         {drumpadArray.map((item, index) => (
           <DrumPad
